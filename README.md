@@ -55,13 +55,19 @@ All database setup should be done via migration.
 Service
 -------
 
-A contest service has been provided in the protected/services directory and is instantiated in the contest
-controller and so can be accessed in any of the controller functions or views. 
-You may wish to implement functionality logic in the service file. 
+A contest service has been provided in the protected/services directory and is 
+instantiated in the contest controller and so can be accessed in any of the controller 
+functions or views.  You may wish to implement functionality logic in the service file. 
 
 
 Tasks
 -----
+
+**IMPORTANT**: You are **REQUIRED** to use AI to assist your programming 
+of the tasks below. After commiting your solution please also email your AI conversation 
+transcripts to your Decorilla contact. You do not need to submit complete/comprehensive 
+transcripts (though you may!) but submitted transcripts should be representative of your 
+work on the tasks.
 
 ***1. Create a Poll;***
 Customer may select between 3 and 8 of their project entries to create a 'polling' page/url 
