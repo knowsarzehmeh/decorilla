@@ -57,13 +57,6 @@
 
 <script type="text/javascript">
 $(document).ready(function() {
-    // Add checkboxes to each contest entry (only in contest view)
-    $('.contest-row-container > div').each(function() {
-        var entryId = $(this).find('a').attr('href').split('/').pop();
-        var checkbox = $('<input type="checkbox" class="poll-entry-checkbox" value="' + entryId + '">');
-        $(this).prepend(checkbox);
-    });
-
     // Handle checkbox changes
     $(document).on('change', '.poll-entry-checkbox', function() {
         var checkedCount = $('.poll-entry-checkbox:checked').length;
