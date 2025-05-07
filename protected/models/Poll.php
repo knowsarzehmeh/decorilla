@@ -102,7 +102,7 @@ class Poll extends CActiveRecord
             'criteria'=>$criteria,
         ));
     }
-    
+
     /**
      * Generates a unique URL token for this poll
      * @return string The generated token
@@ -112,22 +112,30 @@ class Poll extends CActiveRecord
         $this->url_token = md5(uniqid(mt_rand(), true));
         return $this->url_token;
     }
-    
+
     /**
      * Before save operations
      */
     protected function beforeSave()
     {
+        // Log the current state for debugging
+        Yii::log('Poll beforeSave called. isNewRecord: ' . ($this->isNewRecord ? 'true' : 'false') . ', created_at: ' . $this->created_at, CLogger::LEVEL_INFO, 'poll');
+
         if ($this->isNewRecord) {
-            $this->created_at = time();
+            // Make sure created_at is set
+            if (empty($this->created_at)) {
+                $this->created_at = time();
+                Yii::log('Poll created_at set to: ' . $this->created_at, CLogger::LEVEL_INFO, 'poll');
+            }
+
             if (empty($this->url_token)) {
                 $this->generateUrlToken();
             }
         }
-        
+
         return parent::beforeSave();
     }
-    
+
     /**
      * Get the public URL for this poll
      * @return string The URL
@@ -136,7 +144,7 @@ class Poll extends CActiveRecord
     {
         return Yii::app()->createAbsoluteUrl('poll/view', array('token' => $this->url_token));
     }
-    
+
     /**
      * Get vote count for a specific contest entry in this poll
      * @param integer $contestEntryId The contest entry ID
@@ -149,7 +157,7 @@ class Poll extends CActiveRecord
             ':entryId' => $contestEntryId,
         ));
     }
-    
+
     /**
      * Get the entry with the most votes
      * @return ContestEntry|null The winning entry or null if no votes
@@ -163,13 +171,13 @@ class Poll extends CActiveRecord
         $criteria->group = 't.contest_entry_id';
         $criteria->order = 'vote_count DESC';
         $criteria->limit = 1;
-        
+
         $vote = Vote::model()->find($criteria);
-        
+
         if ($vote) {
             return ContestEntry::model()->findByPk($vote->contest_entry_id);
         }
-        
+
         return null;
     }
 }

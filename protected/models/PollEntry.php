@@ -41,7 +41,7 @@ class PollEntry extends CActiveRecord
             array('poll_id, contest_entry_id', 'required'),
             array('poll_id, contest_entry_id', 'numerical', 'integerOnly'=>true),
             // Ensure unique combination of poll_id and contest_entry_id
-            array('poll_id, contest_entry_id', 'unique', 'className' => 'PollEntry', 'attributeNames' => array('poll_id', 'contest_entry_id'), 'message' => 'This entry is already in the poll.'),
+            array('contest_entry_id', 'validateUniqueCombination'),
             // The following rule is used by search().
             array('id, poll_id, contest_entry_id', 'safe', 'on'=>'search'),
         );
@@ -86,7 +86,30 @@ class PollEntry extends CActiveRecord
             'criteria'=>$criteria,
         ));
     }
-    
+
+    /**
+     * Custom validator to ensure unique combination of poll_id and contest_entry_id
+     * @param string $attribute The attribute being validated
+     * @param array $params Additional parameters
+     */
+    public function validateUniqueCombination($attribute, $params)
+    {
+        if (!$this->hasErrors()) {
+            $exists = self::model()->exists(
+                'poll_id=:pollId AND contest_entry_id=:entryId AND id!=:id',
+                array(
+                    ':pollId' => $this->poll_id,
+                    ':entryId' => $this->contest_entry_id,
+                    ':id' => $this->id ? $this->id : 0
+                )
+            );
+
+            if ($exists) {
+                $this->addError($attribute, 'This entry is already in the poll.');
+            }
+        }
+    }
+
     /**
      * Get the number of votes for this poll entry
      * @return integer The vote count

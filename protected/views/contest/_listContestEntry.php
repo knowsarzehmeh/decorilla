@@ -10,8 +10,8 @@
  */
 ?>
 
-<div style="border: 1px dotted gray;padding:20px; margin: 5px;">
-	<a href="<?php echo $this->createUrl('entry', array('id' => $data->id)); ?>">
+<div style="border: 1px dotted gray;padding:20px; margin: 5px; position: relative;">
+	<a href="<?php echo $this->createUrl('entry', array('id' => $data->id)); ?>" style="display: block;">
 	<div>Submitted By: <?php echo $data->designer->user_name; ?></div>
 	<div>Comments: <?php echo $data->comments; ?></div>
 	<div><img style="width:300px;" src="<?php echo $data->primary_image_src; ?>"></div>

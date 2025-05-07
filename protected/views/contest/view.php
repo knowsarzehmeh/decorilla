@@ -28,6 +28,7 @@
 
     <form id="poll-form" action="<?php echo $this->createUrl('/poll/create'); ?>" method="post">
         <input type="hidden" name="contest_id" value="<?php echo $contest->id; ?>">
+        <?php echo CHtml::hiddenField(Yii::app()->request->csrfTokenName, Yii::app()->request->csrfToken); ?>
 
         <div class="">
             <label for="poll-title">Poll Title (optional):</label>
@@ -35,7 +36,7 @@
         </div>
 
         <div id="poll-entries-container">
-            <!-- Entries will be selected in the list below -->
+            <!-- Hidden inputs for selected entries will be added here dynamically -->
         </div>
 
         <div class=" buttons" style="margin-top: 10px;">
@@ -56,18 +57,28 @@
 
 <script type="text/javascript">
 $(document).ready(function() {
-    // Add checkboxes to each contest entry
+    // Add checkboxes to each contest entry (only in contest view)
     $('.contest-row-container > div').each(function() {
         var entryId = $(this).find('a').attr('href').split('/').pop();
-        var checkbox = $('<input type="checkbox" class="poll-entry-checkbox" name="contest_entries[]" value="' + entryId + '">');
+        var checkbox = $('<input type="checkbox" class="poll-entry-checkbox" value="' + entryId + '">');
         $(this).prepend(checkbox);
     });
 
     // Handle checkbox changes
-    $('.poll-entry-checkbox').change(function() {
+    $(document).on('change', '.poll-entry-checkbox', function() {
         var checkedCount = $('.poll-entry-checkbox:checked').length;
         var $status = $('#selection-status');
         var $button = $('#create-poll-btn');
+        var $container = $('#poll-entries-container');
+
+        // Clear the container
+        $container.empty();
+
+        // Add hidden inputs for each checked checkbox
+        $('.poll-entry-checkbox:checked').each(function() {
+            var entryId = $(this).val();
+            $container.append('<input type="hidden" name="contest_entries[]" value="' + entryId + '">');
+        });
 
         if (checkedCount >= 3 && checkedCount <= 8) {
             $status.text(checkedCount + ' entries selected');
@@ -76,11 +87,27 @@ $(document).ready(function() {
             $status.text('Please select 3-8 entries (currently ' + checkedCount + ' selected)');
             $button.prop('disabled', true);
         }
+
+        // Debug - log selected entries
+        console.log('Selected entries:', $('.poll-entry-checkbox:checked').map(function() {
+            return $(this).val();
+        }).get());
+        console.log('Hidden inputs:', $('#poll-entries-container input').map(function() {
+            return $(this).val();
+        }).get());
     });
 
     // Form validation
     $('#poll-form').submit(function(e) {
         var checkedCount = $('.poll-entry-checkbox:checked').length;
+        var $container = $('#poll-entries-container');
+
+        // Clear and update the hidden inputs one more time to be sure
+        $container.empty();
+        $('.poll-entry-checkbox:checked').each(function() {
+            var entryId = $(this).val();
+            $container.append('<input type="hidden" name="contest_entries[]" value="' + entryId + '">');
+        });
 
         if (checkedCount < 3 || checkedCount > 8) {
             e.preventDefault();
@@ -88,16 +115,36 @@ $(document).ready(function() {
             return false;
         }
 
+        // Make sure we have hidden inputs before submitting
+        if ($('#poll-entries-container input').length === 0) {
+            e.preventDefault();
+            alert('Please select at least 3 entries for your poll.');
+            return false;
+        }
+
+        // Debug - log form data before submission
+        console.log('Form data:', $(this).serialize());
+        console.log('Hidden inputs count:', $('#poll-entries-container input').length);
+        console.log('Hidden inputs values:', $('#poll-entries-container input').map(function() {
+            return $(this).val();
+        }).get());
+
         return true;
     });
+
+    // Trigger the change event to update the status initially
+    if ($('.poll-entry-checkbox').length > 0) {
+        $('.poll-entry-checkbox').first().trigger('change');
+    }
 });
 </script>
 
 <style type="text/css">
 .poll-entry-checkbox {
     margin-right: 10px;
-    float: left;
-    margin-top: 20px;
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
 }
 #selection-status {
     margin-left: 10px;
